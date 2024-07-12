@@ -39,8 +39,7 @@
 {% else %}
         <li><a href="{% url 'home' %}">Все категории</a></li>
 {% endif %}
-
-
+		
 {% for c in cats  %}
 {% if c.women__count > 0 %}
 	{% if c.pk == cat_selected %}
@@ -67,6 +66,20 @@
 	<div class="content-text">
 {% block content %}
 {% endblock %}
+<nav class='list-pages'>
+	<ul>
+		{% for p in paginator.page_range %}
+		{% if page_obj.number == p  %}
+		<li class='page-num page-num-selected'>{{ p }}</li>
+		{% elif p >= page_obj.number|add:-2 and p <= page_obj.number|add:2 %}
+		{% else %}
+		<li class='page-num'>
+			<a href="?page={{ p }}">{{ p }}</a>
+		</li>
+		{% endif %}
+		{% endfor %}
+	</ul>
+</nav>
 	</div>
 <!-- Конец блока контента -->
 
