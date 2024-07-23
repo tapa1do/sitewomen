@@ -5,7 +5,7 @@ from django.contrib.auth.views import LoginView
 from django.http import Http404, HttpResponse, HttpResponseNotFound
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse_lazy
-from django.views.generic import ListView, DetailView, CreateView
+from django.views.generic import FormView, ListView, DetailView, CreateView
 from django.contrib.auth.mixins import LoginRequiredMixin
 
 from .forms import *
@@ -23,7 +23,7 @@ class WomenHome(DataMixin, ListView):
         return dict(list(context.items()) + list(c_def.items()))
     
     def get_queryset(self):
-        return Women.objects.filter(is_published=True)
+        return Women.objects.filter(is_published=True).select_related('cat')
 
 # def  index(request): #HttpRequest
 #     posts = Women.objects.all()
@@ -68,8 +68,22 @@ class AddPage(LoginRequiredMixin, DataMixin, CreateView):
 #         form =AddPostForm()
 #     return render(request, 'women/addpage.html', {'form': form, 'menu': menu, 'title': 'Добавление статьи'})
 
-def contact(request):
-    return HttpResponse('Обратная связь')
+# def contact(request):
+    # return HttpResponse('Обратная связь')
+
+class ContactFormView(DataMixin, FormView):
+    form_class = ContactForm
+    template_name = 'women/contact.html'
+    success_url = reverse_lazy('home')
+
+    def get_context_data(self, *, object_list=None, **kwargs):
+        context = super().get_context_data(**kwargs)
+        c_def = self.get_user_context(title='Обратная связь')
+        return dict(list(context.items()) + list(c_def.items()))
+    
+    def form_valid(self, form):
+        print(form.cleaned_data)
+        return redirect('home')
 
 # def login(request):
 #     return HttpResponse('Авторизация')
@@ -108,7 +122,7 @@ class WomenCategory(DataMixin, ListView):
     allow_empty = False
 
     def get_queryset(self):
-        return Women.objects.filter(cat__slug=self.kwargs['cat_slug'], is_published=True)
+        return Women.objects.filter(cat__slug=self.kwargs['cat_slug'], is_published=True).select_related('cat')
     
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(**kwargs)
